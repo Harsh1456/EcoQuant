@@ -1003,8 +1003,8 @@ def save_project():
         # Save emissions data
         cur.execute(
             """INSERT INTO emissions (project_id, asphalt_t, aggregate_t, cement_t, steel_t, 
-            diesel_l, electricity_kwh, transport_tkm, water_use, waste_t, recycled_pct, renewable_pct, calculated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())""",
+            diesel_l, electricity_kwh, transport_tkm, water_use, waste_t, recycled_pct, renewable_pct)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
             (project_id,
              data.get('asphalt_t', 0) or 0,
              data.get('aggregate_t', 0) or 0,
@@ -1024,8 +1024,8 @@ def save_project():
         
         # Save carbon credits
         cur.execute(
-            "INSERT INTO carbon_credits (project_id, credits_earned, credit_value) VALUES (%s, %s, %s)",
-            (project_id, result['credits'], result['credits'] * 1000)  # Assuming ₹1000 per credit
+            "INSERT INTO carbon_credits (user_id, project_id, credits_earned, credit_value) VALUES (%s, %s, %s, %s)",
+            (session['user_id'], project_id, result['credits'], result['credits'] * 1000)  # Assuming ₹1000 per credit
         )
         
         # Generate recommendations based on project data and type
