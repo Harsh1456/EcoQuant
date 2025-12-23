@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ project.name }} - EcoQuant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F7D5C',
+                        secondary: '#0099A0',
+                        accent: '#12303B',
+                        light: '#F2FCF9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .stat-card { transition: transform 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .tab-active { 
+            border-bottom: 3px solid #0F7D5C;
+            color: #0F7D5C;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #12303B;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #0F7D5C;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #0F7D5C;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #0F7D5C;
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white text-accent shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/home" class="flex items-center space-x-2 hover:text-green">
+                <i class="fas fa-leaf text-2xl text-primary"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/carbon" class="nav-link">Carbon Credits</a>
+                <a href="/reports" class="nav-link">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="profile-btn" class="flex items-center space-x-2 hover:text-green">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <span>{{ username[0] }}{{ username[1] if username|length > 1 else '' }}</span>
+                        </div>
+                        <span>{{ username }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                        <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+                <button class="md:hidden text-accent">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Project Header -->
+    <div class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <div class="flex items-center">
+                        <a href="/dashboard" class="text-gray-500 hover:text-primary flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                        </a>
+                    </div>
+                    <div class="flex items-center mt-4">
+                        <h1 class="text-2xl font-bold text-accent mr-4">{{ project.name }}</h1>
+                        <span class="status-badge 
+                            {% if project.status == 'Completed' %}bg-green-100 text-green-800
+                            {% elif project.status == 'In Progress' %}bg-blue-100 text-blue-800
+                            {% elif project.status == 'Planning' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ project.status }}
+                        </span>
+                    </div>
+                    <div class="flex flex-wrap items-center mt-2 text-gray-600">
+                        <div class="flex items-center mr-6">
+                            <i class="fas fa-folder mr-2"></i>
+                            <span>{{ project.type }}</span>
+                        </div>
+                        <div class="flex items-center mr-6">
+                            <i class="fas fa-calendar mr-2"></i>
+                            <span>{{ project.date }}</span>
+                        </div>
+                        <div class="flex items-center mr-6">
+                            <i class="fas fa-map-marker mr-2"></i>
+                            <span>{{ project.location }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-user mr-2"></i>
+                            <span>Project Manager: Rajesh Kumar</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 flex space-x-3">
+                    <a href="/download/project/{{ project.id }}" class="bg-gray-200 text-accent px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition flex items-center">
+                        <i class="fas fa-download mr-2"></i> Export
+                    </a>
+                    <a href="/edit-project/{{ project.id }}" class="bg-primary text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary transition flex items-center">
+                        <i class="fas fa-edit mr-2"></i> Edit
+                    </a>
+                    <button class="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition flex items-center delete-project" data-project-id="{{ project.id }}">
+                        <i class="fas fa-trash mr-2"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl p-5 card-shadow stat-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Total CO₂e</p>
+                        <h3 class="text-2xl font-bold text-accent mt-1">{{ project.co2e|round|int }} t</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded-lg">
+                        <i class="fas fa-cloud text-xl text-primary"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Baseline: {{ (project.co2e * 1.2)|round|int }} t</p>
+            </div>
+            
+            <div class="bg-white rounded-xl p-5 card-shadow stat-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Reduction Achieved</p>
+                        <h3 class="text-2xl font-bold text-accent mt-1">{{ project.reduction }}%</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded-lg">
+                        <i class="fas fa-chart-line text-xl text-primary"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-5 card-shadow stat-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Carbon Credits</p>
+                        <h3 class="text-2xl font-bold text-accent mt-1">{{ project.credits }}</h3>
+                    </div>
+                    <div class="bg-light p-3 rounded-lg">
+                        <i class="fas fa-coins text-xl text-primary"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl p-5 card-shadow stat-card">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-gray-500 text-sm font-medium">Emission Intensity</p>
+                        <h3 class="text-2xl font-bold text-accent mt-1">
+                            {% if project.type == 'Road' %}
+                                8.2 t/km
+                            {% else %}
+                                15.3 t/m²
+                            {% endif %}
+                        </h3>
+                    </div>
+                    <div class="bg-light p-3 rounded-lg">
+                        <i class="fas fa-road text-xl text-primary"></i>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">
+                    Industry avg: 
+                    {% if project.type == 'Road' %}
+                        9.5 t/km
+                    {% else %}
+                        18.7 t/m²
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Materials Breakdown -->
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-accent">Materials Emissions</h2>
+                </div>
+                <div class="h-80">
+                    <canvas id="materialsChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Carbon Footprint Breakdown -->
+            <div class="bg-white rounded-xl p-6 card-shadow">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-accent">Carbon Footprint Breakdown</h2>
+                </div>
+                <div class="h-80">
+                    <canvas id="footprintChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Recommendations -->
+        <div class="bg-white rounded-xl p-6 card-shadow mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold text-accent">AI Recommendations</h2>
+                <button id="refresh-recommendations" class="text-primary font-medium flex items-center">
+                    <i class="fas fa-sync-alt mr-2"></i> Refresh
+                </button>
+            </div>
+            
+            <div id="recommendations-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for rec in recommendations %}
+                <div class="border border-gray-200 rounded-lg p-5">
+                    <div class="flex items-start mb-4">
+                        <div class="w-10 h-10 rounded-full 
+                            {% if rec.category == 'Materials' %}bg-green-100 text-green-600
+                            {% elif rec.category == 'Equipment' %}bg-blue-100 text-blue-600
+                            {% elif rec.category == 'Energy' %}bg-yellow-100 text-yellow-600
+                            {% elif rec.category == 'Logistics' %}bg-purple-100 text-purple-600
+                            {% else %}bg-gray-100 text-gray-600{% endif %} 
+                            flex items-center justify-center mr-4">
+                            {% if rec.category == 'Materials' %}
+                            <i class="fas fa-cubes"></i>
+                            {% elif rec.category == 'Equipment' %}
+                            <i class="fas fa-tools"></i>
+                            {% elif rec.category == 'Energy' %}
+                            <i class="fas fa-bolt"></i>
+                            {% elif rec.category == 'Logistics' %}
+                            <i class="fas fa-truck"></i>
+                            {% else %}
+                            <i class="fas fa-lightbulb"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-accent">{{ rec.title }}</h3>
+                            <p class="text-gray-600 text-sm">Category: {{ rec.category|default('General', true) }}</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">{{ rec.description }}</p>
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">Impact: </span>
+                            <span class="
+                                {% if rec.impact == 'High' %}text-green-600
+                                {% elif rec.impact == 'Medium' %}text-yellow-600
+                                {% else %}text-gray-600{% endif %} 
+                                font-medium">{{ rec.impact }}</span>
+                        </div>
+                        <div>
+                            <span class="text-sm font-medium text-gray-700">Cost: </span>
+                            <span class="text-gray-700">
+                                {% if rec.cost >= 10000000 %}
+                                    ₹ {{ "%.2f"|format(rec.cost / 10000000) }} Cr
+                                {% elif rec.cost >= 100000 %}
+                                    ₹ {{ "%.2f"|format(rec.cost / 100000) }} L
+                                {% else %}
+                                    ₹ {{ "{:,.0f}".format(rec.cost) }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-accent text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <i class="fas fa-leaf text-2xl text-white mr-2"></i>
+                    <span class="text-xl font-bold">EcoQuant</span>
+                </div>
+                <p class="text-gray-300 max-w-2xl mx-auto">Empowering sustainable infrastructure through data-driven carbon management and AI-powered insights.</p>
+                <div class="flex justify-center space-x-6 mt-6">
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-github"></i></a>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-6 text-sm text-gray-400">
+                    <p>© 2025 EcoQuant. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation active tab highlight
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const linkPath = link.getAttribute('href').replace(/\/$/, "");
+                if (linkPath && currentPath === linkPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Profile dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileBtn = document.getElementById('profile-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            if (profileBtn && userDropdown) {
+                profileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    const isClickInsideDropdown = userDropdown.contains(e.target);
+                    const isClickOnProfileBtn = profileBtn.contains(e.target);
+                    
+                    if (!isClickInsideDropdown && !isClickOnProfileBtn) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+                
+                userDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
+        // Handle delete project
+        document.querySelectorAll('.delete-project').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const projectId = this.getAttribute('data-project-id');
+                
+                if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+                    fetch(`/delete-project/${projectId}`, {
+                        method: 'DELETE',
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = '/dashboard';
+                        } else {
+                            alert('Error deleting project: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+
+        // Initialize charts
+        const breakdownData = {{ breakdown|tojson }};
+        const categoriesData = {{ categories|tojson }};
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Materials Breakdown Chart
+            const materialsCtx = document.getElementById('materialsChart').getContext('2d');
+            new Chart(materialsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Asphalt', 'Aggregate', 'Cement', 'Steel'],
+                    datasets: [{
+                        label: 'CO₂e (tons)',
+                        data: breakdownData.values.slice(0, 4) || [0, 0, 0, 0],
+                        backgroundColor: [
+                            '#0F7D5C', '#0099A0', '#12303B', '#6DB1A8'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { drawBorder: false },
+                            title: { display: true, text: 'CO₂e (tons)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        
+            // Carbon Footprint Chart
+            const footprintCtx = document.getElementById('footprintChart').getContext('2d');
+            new Chart(footprintCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoriesData.labels || ['Materials', 'Equipment', 'Electricity', 'Transport'],
+                    datasets: [{
+                        data: categoriesData.values || [45, 25, 15, 15],
+                        backgroundColor: [
+                            '#0F7D5C',  // Materials - Primary green
+                            '#0099A0',  // Equipment - Secondary teal
+                            '#12303B',  // Electricity - Dark accent
+                            '#6DB1A8'   // Transport - Light teal
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const percentage = Math.round((value / context.dataset.data.reduce((a, b) => a + b, 0)) * 100);
+                                    return `${label}: ${value.toFixed(2)} tons (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+        // Refresh recommendations functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshButton = document.getElementById('refresh-recommendations');
+    const recommendationsContainer = document.getElementById('recommendations-container');
+    
+    refreshButton.addEventListener('click', function() {
+        // Show loading state
+        const originalHtml = refreshButton.innerHTML;
+        refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Refreshing';
+        refreshButton.disabled = true;
+        
+        fetch(`/refresh-recommendations/${'{{ project.id }}'}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Try to get the error message from response
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || `Server error: ${response.status}`);
+                }).catch(() => {
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                // Clear the container
+                recommendationsContainer.innerHTML = '';
+                
+                // Add the new recommendations
+                data.recommendations.forEach(rec => {
+                    const category = rec.category || 'General';
+                    const impactClass = rec.impact === 'High' ? 'text-green-600' : 
+                                      rec.impact === 'Medium' ? 'text-yellow-600' : 'text-gray-600';
+                    
+                    let iconClass = 'fas fa-lightbulb';
+                    let bgClass = 'bg-gray-100 text-gray-600';
+                    
+                    if (category === 'Materials') {
+                        iconClass = 'fas fa-cubes';
+                        bgClass = 'bg-green-100 text-green-600';
+                    } else if (category === 'Equipment') {
+                        iconClass = 'fas fa-tools';
+                        bgClass = 'bg-blue-100 text-blue-600';
+                    } else if (category === 'Energy') {
+                        iconClass = 'fas fa-bolt';
+                        bgClass = 'bg-yellow-100 text-yellow-600';
+                    } else if (category === 'Logistics') {
+                        iconClass = 'fas fa-truck';
+                        bgClass = 'bg-purple-100 text-purple-600';
+                    }
+                    
+                    // Format cost in Indian currency format
+                    const cost = rec.cost;
+                    let costFormatted;
+                    
+                    if (cost >= 10000000) { // Crores
+                        costFormatted = '₹ ' + (cost / 10000000).toFixed(2) + ' Cr';
+                    } else if (cost >= 100000) { // Lakhs
+                        costFormatted = '₹ ' + (cost / 100000).toFixed(2) + ' L';
+                    } else { // Regular format with commas
+                        costFormatted = '₹ ' + cost.toLocaleString('en-IN');
+                    }
+                    
+                    const recommendationHTML = `
+                        <div class="border border-gray-200 rounded-lg p-5">
+                            <div class="flex items-start mb-4">
+                                <div class="w-10 h-10 rounded-full ${bgClass} flex items-center justify-center mr-4">
+                                    <i class="${iconClass}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-accent">${rec.title}</h3>
+                                    <p class="text-gray-600 text-sm">Category: ${category}</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 mb-4">${rec.description}</p>
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-700">Impact: </span>
+                                    <span class="${impactClass} font-medium">${rec.impact}</span>
+                                </div>
+                                <div>
+                                    <span class="text-sm font-medium text-gray-700">Cost: </span>
+                                    <span class="text-gray-700">${costFormatted}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    recommendationsContainer.innerHTML += recommendationHTML;
+                });
+            } else {
+                alert('Error refreshing recommendations: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            // More specific error messages
+            if (error.message.includes('401')) {
+                alert('Session expired. Please log in again.');
+                window.location.href = '/login';
+            } else if (error.message.includes('403')) {
+                alert('You do not have permission to access this project.');
+            } else if (error.message.includes('404')) {
+                alert('No recommendations found for this project.');
+            } else if (error.message.includes('500')) {
+                alert('Server error. Please try again later or contact support.');
+            } else {
+                alert('Error refreshing recommendations: ' + error.message);
+            }
+        })
+        .finally(() => {
+            // Reset button state
+            refreshButton.innerHTML = originalHtml;
+            refreshButton.disabled = false;
+        });
+    });
+});
+    </script>
+</body>
+</html>

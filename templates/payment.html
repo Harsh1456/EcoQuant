@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - EcoQuant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F7D5C',
+                        secondary: '#0099A0',
+                        accent: '#12303B',
+                        light: '#F2FCF9',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .nav-link {
+            position: relative;
+            color: #12303B;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #0F7D5C;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #0F7D5C;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active {
+            color: #0F7D5C;
+            font-weight: 600;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .payment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .input-field {
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            width: 100%;
+            transition: border-color 0.2s;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #0F7D5C;
+            box-shadow: 0 0 0 3px rgba(15, 125, 92, 0.1);
+        }
+        
+        .pay-btn {
+            background-color: #0F7D5C;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .pay-btn:hover {
+            background-color: #0099A0;
+        }
+        
+        .pay-btn:disabled {
+            background-color: #CBD5E0;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white text-accent shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/home" class="flex items-center space-x-2 hover:text-green">
+                <i class="fas fa-leaf text-2xl text-primary"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/carbon" class="nav-link">Carbon Credits</a>
+                <a href="/reports" class="nav-link">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="profile-btn" class="flex items-center space-x-2 hover:text-green">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <span>{{ username[0] }}{{ username[1] if username|length > 1 else '' }}</span>
+                        </div>
+                        <span>{{ username }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                        <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+                <button class="md:hidden text-accent">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-2xl font-bold text-accent mb-6">Complete Your Purchase</h1>
+            
+            <div class="payment-card">
+                <h2 class="text-lg font-bold text-accent mb-4">Order Summary</h2>
+                
+                <div id="order-details" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                    <!-- Order details will be populated by JavaScript -->
+                </div>
+                
+                <h2 class="text-lg font-bold text-accent mb-4">Payment Information</h2>
+                
+                <form id="payment-form">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                            <input type="text" class="input-field" placeholder="1234 5678 9012 3456" required 
+                                   pattern="[0-9\s]{13,19}" maxlength="19" id="card-number">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Card Holder</label>
+                            <input type="text" class="input-field" placeholder="John Doe" required id="card-holder">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                            <input type="text" class="input-field" placeholder="MM/YY" required 
+                                   pattern="(0[1-9]|1[0-2])\/([0-9]{2})" id="expiry-date">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                            <input type="text" class="input-field" placeholder="123" required 
+                                   pattern="[0-9]{3}" maxlength="3" id="cvv">
+                        </div>
+                        <div class="flex items-end">
+                            <div class="flex items-center justify-center w-full h-10 bg-gray-100 rounded-md">
+                                <i class="fab fa-cc-visa text-2xl text-blue-600 mr-2"></i>
+                                <i class="fab fa-cc-mastercard text-2xl text-red-600"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="pay-btn" id="pay-button">
+                        <i class="fas fa-lock mr-2"></i>Pay Now
+                    </button>
+                </form>
+            </div>
+            
+            <div class="text-center text-gray-500 text-sm mt-8">
+                <p>Your payment is secured with SSL encryption. EcoQuant does not store your card details.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-accent text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <i class="fas fa-leaf text-2xl text-white mr-2"></i>
+                    <span class="text-xl font-bold">EcoQuant</span>
+                </div>
+                <p class="text-gray-300 max-w-2xl mx-auto">Empowering sustainable infrastructure through data-driven carbon management and AI-powered insights.</p>
+                <div class="flex justify-center space-x-6 mt-6">
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-github"></i></a>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-6 text-sm text-gray-400">
+                    <p>© 2025 EcoQuant. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get purchase data from sessionStorage (set by the marketplace page)
+        const purchaseData = JSON.parse(sessionStorage.getItem('pendingPurchase'));
+        
+        if (!purchaseData) {
+            alert('No pending purchase found. Please try again from the marketplace.');
+            window.location.href = '/carbon/marketplace';
+            return;
+        }
+        
+        // Populate order details
+        const orderDetails = document.getElementById('order-details');
+        orderDetails.innerHTML = `
+            <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Project:</span>
+                <span class="font-medium">${purchaseData.projectName || 'Selected Project'}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Listing ID:</span>
+                <span class="font-medium">#${purchaseData.listingId}</span>
+            </div>
+            <div class="flex justify-between mb-2">
+                <span class="text-gray-600">Quantity:</span>
+                <span class="font-medium">${purchaseData.quantity} credits</span>
+            </div>
+            <div class="flex justify-between pt-2 border-t border-gray-200">
+                <span class="text-gray-800 font-bold">Total:</span>
+                <span class="text-primary font-bold text-lg">₹ ${purchaseData.totalPrice}</span>
+            </div>
+        `;
+        
+        // Handle form submission
+        const paymentForm = document.getElementById('payment-form');
+        const payButton = document.getElementById('pay-button');
+        
+        paymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Basic form validation
+            const cardNumber = document.getElementById('card-number').value.trim();
+            const cardHolder = document.getElementById('card-holder').value.trim();
+            const expiryDate = document.getElementById('expiry-date').value.trim();
+            const cvv = document.getElementById('cvv').value.trim();
+            
+            if (!cardNumber || !cardHolder || !expiryDate || !cvv) {
+                alert('Please fill in all payment details.');
+                return;
+            }
+            
+            // Disable button to prevent multiple submissions
+            payButton.disabled = true;
+            payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing Payment...';
+            
+            try {
+                // Simulate payment processing delay
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Call the backend API to complete the purchase
+                const response = await fetch('/api/marketplace/complete-purchase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        listingId: purchaseData.listingId,
+                        quantity: purchaseData.quantity,
+                        projectId: purchaseData.projectId,
+                        totalPrice: purchaseData.totalPrice,
+                        // Add payment details (in real app, these would be processed securely)
+                        paymentDetails: {
+                            cardNumber: cardNumber,
+                            cardHolder: cardHolder,
+                            expiryDate: expiryDate,
+                            cvv: cvv
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.status === 'success') {
+                    // Clear the pending purchase data
+                    sessionStorage.removeItem('pendingPurchase');
+                    
+                    // Show success message
+                    alert('Payment successful! ' + result.message);
+                    
+                    // Redirect back to marketplace
+                    window.location.href = '/carbon/marketplace';
+                } else {
+                    // Show error message
+                    alert('Payment failed: ' + (result.message || 'Unknown error occurred'));
+                    
+                    // Re-enable button
+                    payButton.disabled = false;
+                    payButton.innerHTML = '<i class="fas fa-lock mr-2"></i>Pay Now';
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('An error occurred during payment. Please try again.');
+                
+                // Re-enable button
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="fas fa-lock mr-2"></i>Pay Now';
+            }
+        });
+        
+        // Format card number input
+        const cardNumberInput = document.getElementById('card-number');
+        cardNumberInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                value = value.match(new RegExp('.{1,4}', 'g')).join(' ');
+            }
+            e.target.value = value;
+        });
+        
+        // Format expiry date input
+        const expiryDateInput = document.getElementById('expiry-date');
+        expiryDateInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+        
+        // Profile dropdown functionality
+        const profileBtn = document.getElementById('profile-btn');
+        const userDropdown = document.getElementById('user-dropdown');
+        
+        if (profileBtn && userDropdown) {
+            profileBtn.addEventListener('click', function() {
+                userDropdown.classList.toggle('hidden');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!profileBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+                    userDropdown.classList.add('hidden');
+                }
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

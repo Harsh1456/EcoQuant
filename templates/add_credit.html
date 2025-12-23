@@ -1,0 +1,253 @@
+<!-- templates/new_carbon.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Carbon Credit - EcoQuant</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F7D5C',
+                        secondary: '#0099A0',
+                        accent: '#12303B',
+                        light: '#F2FCF9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .stat-card { transition: transform 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .project-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #12303B; /* text-accent */
+            font-weight: 500; /* font-medium */
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #0F7D5C; /* text-primary */
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #0F7D5C; /* Tailwind primary green */
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #0F7D5C;
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+    </style>
+
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white text-accent shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/home" class="flex items-center space-x-2 hover:text-green">
+                <i class="fas fa-leaf text-2xl text-primary"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/carbon" class="nav-link">Carbon Credits</a>
+                <a href="/reports" class="nav-link">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <!-- Add ID to profile button -->
+                    <button id="profile-btn" class="flex items-center space-x-2 hover:text-green">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <span>{{ username[0] }}{{ username[1] if username|length > 1 else '' }}</span>
+                        </div>
+                        <span>{{ username }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <!-- Add ID to dropdown menu -->
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                        <!-- <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user mr-2"></i>Profile
+                        </a> -->
+                        <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+                <button class="md:hidden text-accent">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold text-accent mb-6">Add New Carbon Credit</h1>
+        
+        <div class="bg-white rounded-xl p-6 card-shadow max-w-2xl mx-auto">
+            <form id="add-credit-form">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Project</label>
+                    <select name="project_id" class="w-full border border-gray-300 rounded-lg px-4 py-2.5" required>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}">{{ project.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Credits Earned</label>
+                    <input type="number" name="credits_earned" step="0.01" min="0" 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5" required>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2">Credit Value (₹)</label>
+                    <input type="number" name="credit_value" step="0.01" min="0" 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5" required>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2">Date Issued</label>
+                    <input type="date" name="issued_at" 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2.5">
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <a href="/carbon" class="bg-gray-200 text-accent px-5 py-2.5 rounded-lg font-medium">Cancel</a>
+                    <button type="submit" class="bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-secondary transition">
+                        Save Credit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-accent text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <i class="fas fa-leaf text-2xl text-white mr-2"></i>
+                    <span class="text-xl font-bold">EcoQuant</span>
+                </div>
+                <p class="text-gray-300 max-w-2xl mx-auto">Empowering sustainable infrastructure through data-driven carbon management and AI-powered insights.</p>
+                <div class="flex justify-center space-x-6 mt-6">
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-github"></i></a>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-6 text-sm text-gray-400">
+                    <p>© 2025 EcoQuant. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation active link
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const linkPath = link.getAttribute('href').replace(/\/$/, "");
+                if (linkPath && currentPath === linkPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements using IDs
+            const profileBtn = document.getElementById('profile-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            if (profileBtn && userDropdown) {
+                // Toggle dropdown when profile button is clicked
+                profileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking anywhere else
+                document.addEventListener('click', function(e) {
+                    const isClickInsideDropdown = userDropdown.contains(e.target);
+                    const isClickOnProfileBtn = profileBtn.contains(e.target);
+                    
+                    if (!isClickInsideDropdown && !isClickOnProfileBtn) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking inside it
+                userDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
+        document.getElementById('add-credit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Are you sure you want to add this carbon credit?')) {
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            fetch('/carbon/credit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = '/carbon';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+        </script>
+    </body>
+</html>

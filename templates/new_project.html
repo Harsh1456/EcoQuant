@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Entry - EcoQuant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>New Project - EcoQuant</title>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F7D5C',
+                        secondary: '#0099A0',
+                        accent: '#12303B',
+                        light: '#F2FCF9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .input-focus:focus {
+            border-color: #0F7D5C;
+            box-shadow: 0 0 0 3px rgba(15, 125, 92, 0.2);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            position: relative;
+            color: #12303B; /* text-accent */
+            font-weight: 500; /* font-medium */
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #0F7D5C; /* text-primary */
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #0F7D5C; /* Tailwind primary green */
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #0F7D5C;
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Add tab styles */
+        .tab-container {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .tab.active {
+            border-bottom-color: #0F7D5C;
+            color: #0F7D5C;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white text-accent shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <a href="/home" class="flex items-center space-x-2 hover:text-green">
+                <i class="fas fa-leaf text-2xl text-primary"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/carbon" class="nav-link">Carbon Credits</a>
+                <a href="/reports" class="nav-link">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="profile-btn" class="flex items-center space-x-2 hover:text-green">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <span>{{ username[0] if username else 'G' }}{{ username[1] if username and username|length > 1 else '' }}</span>
+                        </div>
+                        <span>{{ username if username else 'Guest' }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                        {% if username %}
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        {% else %}
+                            <a href="/login" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login
+                            </a>
+                            <a href="/register" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user-plus mr-2"></i>Register
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-xl p-6 card-shadow">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-2xl font-bold text-accent">Create New Project</h1>
+                    <p class="text-gray-600">Upload a CSV file or enter project details manually</p>
+                </div>
+                <a href="/home" class="text-gray-500 hover:text-primary">
+                    <i class="fas fa-times text-xl"></i>
+                </a>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <div class="tab active" data-tab="upload-tab">Upload File</div>
+                <div class="tab" data-tab="manual-tab">Manual Entry</div>
+            </div>
+            
+            <!-- Upload File Tab (Default Active) -->
+            <div id="upload-tab" class="tab-content active">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                    <i class="fas fa-file-csv text-4xl text-secondary mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">Upload Project Data</h3>
+                    <p class="text-gray-500 mb-6">Upload a CSV file with your project data for automatic processing</p>
+                    
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="flex flex-col items-center">
+                            <label for="file-upload" class="bg-primary text-white px-5 py-2.5 rounded-lg font-medium hover:bg-secondary transition cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> Choose CSV File
+                            </label>
+                            <input id="file-upload" name="file" type="file" accept=".csv" class="hidden">
+                            <span id="file-name" class="mt-2 text-sm text-gray-500">No file chosen</span>
+                        </div>
+                        <div class="mt-6">
+                            <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-secondary transition">
+                                <i class="fas fa-upload mr-2"></i> Upload & Process
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-8 text-left">
+                        <h4 class="font-medium text-gray-700 mb-2">CSV Format Requirements:</h4>
+                        <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                            <li>Required columns: project_name, project_type</li>
+                            <li>Material columns: asphalt_t, aggregate_t, cement_t, steel_t</li>
+                            <li>Energy columns: diesel_l, electricity_kwh</li>
+                            <li>Transport columns: transport_tkm</li>
+                            <li>Optional columns: water_use, waste_t, recycled_pct, renewable_pct</li>
+                        </ul>
+                        <div class="mt-4">
+                            <a href="/sample.csv" class="inline-flex items-center bg-gray-100 text-primary px-4 py-2 rounded-lg font-medium hover:bg-gray-200 transition">
+                                <i class="fas fa-download mr-2"></i> Download Sample CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="upload-results" class="hidden mt-8 bg-light rounded-xl p-6">
+                    <!-- Results will be shown here -->
+                </div>
+            </div>
+            
+            <!-- Manual Entry Tab -->
+            <div id="manual-tab" class="tab-content">
+                <form id="project-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Project Basics -->
+                    <div class="md:col-span-2">
+                        <h2 class="text-lg font-semibold text-accent mb-4 pb-2 border-b">Project Basics</h2>
+                    </div>
+                    
+                    <div class="md:col-span-2">
+                        <label class="block text-gray-700 mb-2">Project Name</label>
+                        <input type="text" name="project_name" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="Enter project name" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Project Type</label>
+                        <select name="project_type" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" required>
+                            <option value="">Select type</option>
+                            <option value="Road">Road</option>
+                            <option value="Building">Building</option>
+                            <option value="Bridge">Bridge</option>
+                            <option value="Port">Port</option>
+                            <option value="Rail">Rail</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Location</label>
+                        <input type="text" name="location" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="City, State" required>
+                    </div>
+                    
+                    <div id="road-fields">
+                        <label class="block text-gray-700 mb-2">Road Length (km)</label>
+                        <input type="number" name="road_km" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                    </div>
+                    
+                    <div id="building-fields" class="hidden">
+                        <label class="block text-gray-700 mb-2">Floor Area (m²)</label>
+                        <input type="number" name="floor_area" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                    </div>
+                    <br>
+                    <div>
+                        <label class="block text-gray-700 mb-2">Start Date</label>
+                        <input type="date" name="start_date" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">End Date</label>
+                        <input type="date" name="end_date" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" required>
+                    </div>
+                    
+                    <!-- Materials Section -->
+                    <div class="md:col-span-2 mt-6">
+                        <h2 class="text-lg font-semibold text-accent mb-4 pb-2 border-b">Material Quantities (tonnes)</h2>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Asphalt</label>
+                        <input type="number" name="asphalt_t" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Aggregate</label>
+                        <input type="number" name="aggregate_t" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Cement/Concrete</label>
+                        <input type="number" name="cement_t" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Steel</label>
+                        <input type="number" name="steel_t" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                    </div>
+                    
+                    <!-- Equipment & Energy -->
+                    <div class="md:col-span-2 mt-6">
+                        <h2 class="text-lg font-semibold text-accent mb-4 pb-2 border-b">Equipment & Energy</h2>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Diesel Consumed (liters)</label>
+                        <input type="number" name="diesel_l" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Electricity Use (kWh)</label>
+                        <input type="number" name="electricity_kwh" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                    </div>
+                    
+                    <!-- Transport -->
+                    <div class="md:col-span-2 mt-6">
+                        <h2 class="text-lg font-semibold text-accent mb-4 pb-2 border-b">Transport</h2>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Total Transport Distance (km)</label>
+                        <input type="number" name="transport_tkm" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-700 mb-2">Total Material Weight (tonnes)</label>
+                        <input type="number" name="material_weight" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                    </div>
+                    
+                    <!-- Advanced Options -->
+                    <div class="md:col-span-2 mt-6">
+                        <div class="flex items-center justify-between cursor-pointer" id="advanced-toggle">
+                            <h2 class="text-lg font-semibold text-accent">Advanced Options</h2>
+                            <i class="fas fa-chevron-down text-gray-500"></i>
+                        </div>
+                        <div id="advanced-fields" class="hidden mt-4 pt-4 border-t border-gray-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Water Use (kL)</label>
+                                    <input type="number" name="water_use" step="0.1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.0">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Waste Generated (tonnes)</label>
+                                    <input type="number" name="waste_t" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0.00">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Recycled Content (%)</label>
+                                    <input type="number" name="recycled_pct" min="0" max="100" step="1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-gray-700 mb-2">Renewable Energy (%)</label>
+                                    <input type="number" name="renewable_pct" min="0" max="100" step="1" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 input-focus focus:outline-none" placeholder="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="md:col-span-2 mt-8 flex flex-col sm:flex-row justify-end space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button type="reset" class="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-100 transition">
+                            Reset Form
+                        </button>
+                        <button type="submit" class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-secondary transition flex items-center justify-center">
+                            <i class="fas fa-calculator mr-2"></i> Calculate Emissions
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Results Panel -->
+                <div id="results-panel" class="hidden mt-8 bg-light rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-accent">Emissions Results</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-xl p-5 text-center">
+                            <p class="text-gray-500 text-sm font-medium">Total CO<sub>2</sub>e</p>
+                            <h3 id="total-co2e" class="text-3xl font-bold text-accent mt-2">0 t</h3>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-5 text-center">
+                            <p class="text-gray-500 text-sm font-medium">Estimated Reduction</p>
+                            <h3 id="reduction-pct" class="text-3xl font-bold text-green-500 mt-2">0%</h3>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl p-5 text-center">
+                            <p class="text-gray-500 text-sm font-medium">Carbon Credits</p>
+                            <h3 id="carbon-credits" class="text-3xl font-bold text-secondary mt-2">0</h3>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-5">
+                        <h3 class="font-semibold text-accent mb-4">Breakdown by Category</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Materials</span>
+                                    <span class="font-medium" id="materials-value">0 t</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-primary h-2.5 rounded-full" id="materials-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Equipment</span>
+                                    <span class="font-medium" id="equipment-value">0 t</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-secondary h-2.5 rounded-full" id="equipment-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Transport</span>
+                                    <span class="font-medium" id="transport-value">0 t</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-accent h-2.5 rounded-full" id="transport-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Electricity</span>
+                                    <span class="font-medium" id="electricity-value">0 t</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-green-500 h-2.5 rounded-full" id="electricity-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button id="save-project" class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-secondary transition flex items-center">
+                            <i class="fas fa-save mr-2"></i> Save to Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-accent text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <div class="flex justify-center mb-4">
+                    <i class="fas fa-leaf text-2xl text-white mr-2"></i>
+                    <span class="text-xl font-bold">EcoQuant</span>
+                </div>
+                <p class="text-gray-300 max-w-2xl mx-auto">Empowering sustainable infrastructure through data-driven carbon management and AI-powered insights.</p>
+                <div class="flex justify-center space-x-6 mt-6">
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-github"></i></a>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-6 text-sm text-gray-400">
+                    <p>© 2025 EcoQuant. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation active link
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentPath = window.location.pathname.replace(/\/$/, "");
+            document.querySelectorAll('.nav-link').forEach(link => {
+                const linkPath = link.getAttribute('href').replace(/\/$/, "");
+                if (linkPath && currentPath === linkPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Toggle user dropdown
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements using IDs
+            const profileBtn = document.getElementById('profile-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            if (profileBtn && userDropdown) {
+                // Toggle dropdown when profile button is clicked
+                profileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking anywhere else
+                document.addEventListener('click', function(e) {
+                    const isClickInsideDropdown = userDropdown.contains(e.target);
+                    const isClickOnProfileBtn = profileBtn.contains(e.target);
+                    
+                    if (!isClickInsideDropdown && !isClickOnProfileBtn) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking inside it
+                userDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
+        // File upload handling
+        document.getElementById('file-upload').addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                document.getElementById('file-name').textContent = this.files[0].name;
+            } else {
+                document.getElementById('file-name').textContent = 'No file chosen';
+            }
+        });
+
+        // Upload form submission
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('file-upload');
+            if (!fileInput.files.length) {
+                alert('Please select a CSV file');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
+            submitBtn.disabled = true;
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    const resultsPanel = document.getElementById('upload-results');
+                    resultsPanel.innerHTML = `
+                        <div class="text-center p-6">
+                            <i class="fas fa-check-circle text-4xl text-green-500 mb-4"></i>
+                            <h3 class="text-xl font-bold text-accent mb-2">Project Created Successfully!</h3>
+                            <p class="text-gray-600 mb-6">Your project data has been processed and saved</p>
+                            
+                            <div class="grid grid-cols-3 gap-4 mb-6">
+                                <div class="bg-white rounded-lg p-4">
+                                    <p class="text-gray-500">Project Name</p>
+                                    <p class="font-semibold">${result.project_name || 'New Project'}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4">
+                                    <p class="text-gray-500">Carbon Credits</p>
+                                    <p class="font-semibold">${result.credits || 0}</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4">
+                                    <p class="text-gray-500">CO₂e Reduced</p>
+                                    <p class="font-semibold">${result.co2e || 0} t</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex justify-center space-x-4">
+                                <a href="/dashboard" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg font-medium">
+                                    <i class="fas fa-tachometer-alt mr-2"></i> Go to Dashboard
+                                </a>
+                                <a href="/project/${result.project_id}" class="bg-primary text-white px-5 py-2 rounded-lg font-medium">
+                                    <i class="fas fa-eye mr-2"></i> View Project
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    resultsPanel.classList.remove('hidden');
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('An error occurred during file upload');
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Toggle advanced options
+        document.getElementById('advanced-toggle').addEventListener('click', function() {
+            const advancedFields = document.getElementById('advanced-fields');
+            const icon = this.querySelector('i');
+            
+            if (advancedFields.classList.contains('hidden')) {
+                advancedFields.classList.remove('hidden');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            } else {
+                advancedFields.classList.add('hidden');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        });
+        
+        // Toggle between road and building fields based on project type
+        document.querySelector('select[name="project_type"]').addEventListener('change', function() {
+            const roadFields = document.getElementById('road-fields');
+            const buildingFields = document.getElementById('building-fields');
+            
+            if (this.value === 'Road') {
+                roadFields.classList.remove('hidden');
+                buildingFields.classList.add('hidden');
+            } else if (this.value === 'Building') {
+                roadFields.classList.add('hidden');
+                buildingFields.classList.remove('hidden');
+            } else {
+                roadFields.classList.add('hidden');
+                buildingFields.classList.add('hidden');
+            }
+        });
+        
+        // Form submission
+        document.getElementById('project-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading indicator
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Calculating...';
+            submitBtn.disabled = true;
+            
+            try {
+                // Prepare form data
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Calculate transport_tkm (distance * weight)
+                // const distance = parseFloat(data.transport_km) || 0;
+                // const weight = parseFloat(data.material_weight) || 0;
+                // data.transport_tkm = (distance * weight).toString();
+                
+                // Send data to server
+                const response = await fetch('/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    // Update results panel with actual data
+                    updateResultsPanel(result.result);
+                    
+                    // Show results
+                    document.getElementById('results-panel').classList.remove('hidden');
+                    
+                    // Store project ID for saving
+                    document.getElementById('save-project').dataset.projectId = result.project_id || '';
+                    
+                    // Scroll to results
+                    document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        
+        // Function to update results panel with actual data
+        function updateResultsPanel(result) {
+            // Add type conversion and fallback values
+            const totalT = parseFloat(result.total_co2e) || 0;
+            const materialsT = parseFloat(result.breakdown?.Materials) || 0;
+            const equipmentT = parseFloat(result.breakdown?.["Equipment Fuel"]) || 0;
+            const electricityT = parseFloat(result.breakdown?.Electricity) || 0;
+            const transportT = parseFloat(result.breakdown?.Transport) || 0;
+            const credits = parseFloat(result.credits) || 0;
+            const reduction_pct = parseFloat(result.reduction_pct) || 0;
+
+            // Update values with fallbacks
+            document.getElementById('total-co2e').textContent = `${totalT.toFixed(2)} t`;
+            document.getElementById('reduction-pct').textContent = `${reduction_pct.toFixed(2)}%`;
+            document.getElementById('carbon-credits').textContent = credits.toFixed(2);
+            
+            document.getElementById('materials-value').textContent = `${materialsT.toFixed(2)} t`;
+            document.getElementById('equipment-value').textContent = `${equipmentT.toFixed(2)} t`;
+            document.getElementById('transport-value').textContent = `${transportT.toFixed(2)} t`;
+            document.getElementById('electricity-value').textContent = `${electricityT.toFixed(2)} t`;
+            
+            // Update progress bars
+            const total = totalT || 1;
+            document.getElementById('materials-bar').style.width = `${(materialsT/total)*100}%`;
+            document.getElementById('equipment-bar').style.width = `${(equipmentT/total)*100}%`;
+            document.getElementById('transport-bar').style.width = `${(transportT/total)*100}%`;
+            document.getElementById('electricity-bar').style.width = `${(electricityT/total)*100}%`;
+        }
+        
+        // Save project button
+        document.getElementById('save-project').addEventListener('click', async function() {
+            // Re-gather form data
+            const form = document.getElementById('project-form');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Calculate transport_tkm (distance * weight)
+            const distance = parseFloat(data.transport_km) || 0;
+            const weight = parseFloat(data.material_weight) || 0;
+            data.transport_tkm = (distance * weight).toString();
+
+            // Show loading on the button
+            const saveBtn = this;
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                // Send data to /save-project AS JSON
+                const response = await fetch('/save-project', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'  // Add JSON header
+                    },
+                    body: JSON.stringify(data)  // Stringify the data
+                });
+
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    // Redirect to the project page
+                    window.location.href = result.redirect_url;
+                } else {
+                    if (result.redirect) {
+                        window.location.href = result.redirect;
+                    } else {
+                        alert(`Error: ${result.message}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

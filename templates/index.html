@@ -1,0 +1,445 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoQuant - Carbon Management Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F7D5C',
+                        secondary: '#0099A0',
+                        accent: '#12303B',
+                        light: '#F2FCF9',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0F7D5C 0%, #0099A0 100%); }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .upload-zone { 
+            border: 2px dashed #cbd5e0;
+            transition: all 0.3s ease;
+        }
+        .upload-zone:hover, .upload-zone.drag-over { 
+            border-color: #0F7D5C;
+            background-color: #F2FCF9;
+        }
+        .stat-card { transition: transform 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); }
+        .nav-link {
+            color: #fff;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .nav-link:hover {
+            color: #F2FCF9;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #F2FCF9; /* light green accent */
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .nav-link.active {
+            color: #F2FCF9;
+            font-weight: 600;
+        }
+
+        .nav-link.active::after {
+            width: 100%;
+        }
+
+        .relative {
+            position: relative;
+        }
+
+        #user-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        #user-menu a {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        #user-menu a:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-md">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <!-- <div class="flex items-center space-x-2">
+                <i class="fas fa-leaf text-2xl"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </div> -->
+            <a href="/home" class="flex items-center space-x-2 hover:text-green">
+                <i class="fas fa-leaf text-2xl"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+            <div class="hidden md:flex space-x-6">
+                <a href="/home" class="nav-link">Home</a>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/carbon" class="nav-link">Carbon Credits</a>
+                <a href="/reports" class="nav-link">Reports</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                {% if username %}
+                <!-- User is logged in - show profile dropdown -->
+                <div class="relative">
+                    <!-- Add ID to profile button -->
+                    <button id="profile-btn" class="flex items-center space-x-2 text-white hover:text-gray-200">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white">
+                            <span>{{ username[0] }}{{ username[1] if username|length > 1 else '' }}</span>
+                        </div>
+                        <span>{{ username }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <!-- Add ID to dropdown menu -->
+                    <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden">
+                        <!-- <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user mr-2"></i>Profile
+                        </a> -->
+                        <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- User is not logged in - show sign in button -->
+                <a href="/login" class="bg-white text-primary px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-user mr-2"></i>Sign In
+                </a>
+                {% endif %}
+                <button class="md:hidden text-white">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">Measure. Reduce. Monetize.</h1>
+            <p class="text-xl max-w-2xl mx-auto mb-10">EcoQuant empowers infrastructure stakeholders to manage carbon emissions through AI-powered insights and seamless carbon credit integration.</p>
+            <!-- <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/login" class="bg-white text-primary px-8 py-3 rounded-lg font-semibold text-lg hover:bg-gray-100 transition shadow-lg">
+                    Sign In
+                </a>
+                <a href="/register" class="bg-transparent border-2 border-white px-8 py-3 rounded-lg font-semibold text-lg hover:bg-white hover:text-primary transition">
+                    Register
+                </a>
+            </div> -->
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-accent mb-4">Transform Infrastructure Sustainability</h2>
+            <p class="text-gray-600 text-center max-w-2xl mx-auto mb-12">Comprehensive carbon management for government agencies, construction firms, and sustainability consultants.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="w-14 h-14 gradient-bg rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-calculator text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Precision Emissions Tracking</h3>
+                    <p class="text-gray-600">Calculate Scope 1, 2, and 3 emissions with industry-specific models tailored for infrastructure projects.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="w-14 h-14 gradient-bg rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-robot text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent mb-2">AI-Powered Optimization</h3>
+                    <p class="text-gray-600">Receive actionable insights to reduce emissions and maximize carbon credit potential.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 card-shadow">
+                    <div class="w-14 h-14 gradient-bg rounded-lg flex items-center justify-center mb-4">
+                        <i class="fas fa-file-contract text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-accent mb-2">Compliance & Reporting</h3>
+                    <p class="text-gray-600">Generate SDG-compliant reports and seamlessly integrate with government systems via API.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Data Upload Section -->
+    <!-- <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-light rounded-2xl p-8 card-shadow">
+                <h2 class="text-3xl font-bold text-accent mb-2">Upload Project Data</h2>
+                <p class="text-gray-600 mb-6">Get started by uploading your project data in CSV or JSON format.</p>
+                
+                <div id="upload-container" class="mb-8">
+                    <div id="drop-area" class="upload-zone rounded-xl p-12 text-center cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-secondary mb-4"></i>
+                        <p class="text-lg font-medium text-gray-700 mb-2">Drag & drop your file here</p>
+                        <p class="text-gray-500 mb-4">or</p>
+                        <label for="file-input" class="bg-secondary text-white px-6 py-2 rounded-lg font-medium cursor-pointer hover:bg-primary transition">
+                            Browse Files
+                        </label>
+                        <input type="file" id="file-input" class="hidden" accept=".csv,.json">
+                        <p class="text-sm text-gray-500 mt-4">Supports CSV, JSON files (max 10MB)</p>
+                    </div>
+                    <div id="upload-status" class="mt-4 text-center hidden">
+                        <div class="flex justify-center mb-2">
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-spinner fa-spin text-green-500"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-700">Processing your file...</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-center my-6">
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                    <span class="px-4 text-gray-500 font-medium">OR</span>
+                    <div class="h-px bg-gray-200 flex-1"></div>
+                </div>
+                
+                <div class="text-center">
+                    <a href="/manual-entry" class="inline-block bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-secondary transition">
+                        <i class="fas fa-keyboard mr-2"></i>Enter Data Manually
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section> -->
+
+    <!-- Testimonials -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-accent mb-12">Trusted by Industry Leaders</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl card-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                            <i class="fas fa-building text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">GHMC Sustainability Cell</h4>
+                            <p class="text-gray-500">Government Agency</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"EcoQuant has transformed how we track and report emissions across our infrastructure projects. The carbon credit integration is game-changing."</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl card-shadow">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                            <i class="fas fa-hard-hat text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">Superior Paving Corp</h4>
+                            <p class="text-gray-500">Construction Firm</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"The AI recommendations have helped us reduce emissions by 22% on average while maintaining project timelines. A must-have for modern contractors."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-accent text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fas fa-leaf text-2xl"></i>
+                        <span class="text-xl font-bold">EcoQuant</span>
+                    </div>
+                    <p class="text-gray-300 mb-4">Empowering sustainable infrastructure through data-driven carbon management.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Platform</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/dashboard" class="text-gray-300 hover:text-white">Dashboard</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Carbon Credits</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Reports</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">API Integration</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Documentation</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Case Studies</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Webinars</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Contact</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3"></i>
+                            <span class="text-gray-300">Hyderabad, Telangana, India</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-3"></i>
+                            <span class="text-gray-300">info@ecoquant.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-3"></i>
+                            <span class="text-gray-300">+91 40 1234 5678</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2025 EcoQuant. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const currentUrl = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.getAttribute('href') === currentUrl) {
+                link.classList.add('active');
+            }
+        });
+
+        // Profile dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get elements using IDs
+            const profileBtn = document.getElementById('profile-btn');
+            const userDropdown = document.getElementById('user-dropdown');
+            
+            if (profileBtn && userDropdown) {
+                // Toggle dropdown when profile button is clicked
+                profileBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
+                
+                // Close dropdown when clicking anywhere else
+                document.addEventListener('click', function(e) {
+                    const isClickInsideDropdown = userDropdown.contains(e.target);
+                    const isClickOnProfileBtn = profileBtn.contains(e.target);
+                    
+                    if (!isClickInsideDropdown && !isClickOnProfileBtn) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
+                
+                // Prevent dropdown from closing when clicking inside it
+                userDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+
+        // File upload functionality
+        const dropArea = document.getElementById('drop-area');
+        const fileInput = document.getElementById('file-input');
+        const uploadStatus = document.getElementById('upload-status');
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+        
+        // Handle file selection via button
+        fileInput.addEventListener('change', handleFiles, false);
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        function highlight() {
+            dropArea.classList.add('drag-over');
+        }
+        
+        function unhighlight() {
+            dropArea.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }
+        
+        function handleFiles(fileList) {
+            const files = [...fileList];
+            if (files.length === 0) return;
+            
+            // Show upload status
+            uploadStatus.classList.remove('hidden');
+            
+            // Simulate file processing (in real app, this would be an AJAX call)
+            setTimeout(() => {
+                // Redirect to dashboard after "processing"
+                window.location.href = '/dashboard';
+            }, 2000);
+        }
+
+    </script>
+</body>
+</html>

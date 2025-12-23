@@ -1,0 +1,56 @@
+<!-- templates/error.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error - EcoQuant</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #0F7D5C 0%, #0099A0 100%); }
+        .animate-wiggle {
+            animation: wiggle 1s ease-in-out infinite;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav class="gradient-bg text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/home" class="flex items-center space-x-2 hover:opacity-90 transition">
+                <i class="fas fa-leaf text-2xl"></i>
+                <span class="text-xl font-bold">EcoQuant</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Error Content -->
+    <main class="flex-grow flex items-center justify-center py-16 px-4">
+        <div class="bg-white shadow-xl rounded-2xl p-10 max-w-lg w-full text-center">
+            <i class="fas fa-exclamation-triangle text-yellow-500 text-6xl mb-6 animate-wiggle"></i>
+            <h1 class="text-3xl font-bold text-gray-800 mb-3">Oops! Something went wrong.</h1>
+            <p class="text-gray-600 mb-8 text-lg">{{ error }}</p>
+            <a href="/dashboard" class="inline-block bg-[#0F7D5C] hover:bg-[#0c654c] text-white px-6 py-3 rounded-lg font-medium transition duration-200">
+                Return to Dashboard
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-6">
+        <div class="container mx-auto text-center">
+            <p class="text-sm text-gray-200">© 2025 EcoQuant. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
