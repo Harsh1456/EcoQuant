@@ -26,20 +26,10 @@ SET row_security = off;
 --
 
 COPY public.users (id, username, email, created_at, password_hash, role) FROM stdin;
-1	Harsh	Harsh@gmail.com	2025-08-21 10:21:28.42217	hash	user
-2	Demo	Demo@gmail.com	2025-08-21 10:28:29.094993	hash	user
-3	Pruthvi	Pruthvi@gmail.com	2025-08-26 19:17:05.708274	hash	user
-13	seller_1a9296fd	seller_1a9296fd@test.com	2025-12-22 15:53:35.522739	hash	user
-14	buyer_425063db	buyer_425063db@test.com	2025-12-22 15:53:35.522739	hash	user
-15	seller_72039c80	seller_72039c80@test.com	2025-12-22 15:54:00.658413	hash	user
-16	buyer_efafb77e	buyer_efafb77e@test.com	2025-12-22 15:54:00.658413	hash	user
-17	seller_4e316a13	seller_4e316a13@test.com	2025-12-22 15:54:56.282342	hash	user
-18	buyer_90e8e420	buyer_90e8e420@test.com	2025-12-22 15:54:56.282342	hash	user
-19	seller_e532a9c1	seller_e532a9c1@test.com	2025-12-22 15:55:25.538866	hash	user
-20	buyer_26cf5176	buyer_26cf5176@test.com	2025-12-22 15:55:25.538866	hash	user
-21	seller_4e0e5e30	seller_4e0e5e30@test.com	2025-12-22 15:58:52.616417	hash	user
-22	buyer_d7100bd7	buyer_d7100bd7@test.com	2025-12-22 15:58:52.616417	hash	user
-23	meet	meet@gmail.com	2025-12-24 00:22:07.164808	scrypt:32768:8:1$oYqzBZW426ZdE38j$3f2569737413d4172739302d9548199d6da14095df37f7e023830354db774b5b61f38c220d0c3af85b2290d0428b3c77db04a906c7522761935dfd536a38b79e	user
+1	Harsh	Harsh@gmail.com	2025-08-21 10:21:28.42217	scrypt:32768:8:1$jPUViABLALjM8GFy$09a53bbcc9d185e394de26d7acd23a9bde43b80840afd523e79d4b7f49f5fd4f1add1d4174f363321a27b3bc9b26bd9cb9883dbc534eef7ac4049824e4991d77	user
+2	Demo	Demo@gmail.com	2025-08-21 10:28:29.094993	scrypt:32768:8:1$4eXALHHiWwcKiojv$2e316862f05786735f39b7c2aa6abef7256f24abc86db8bdcbcf56d9246d20cc04b9d14c75fc2b58a38237658a2280e494f44acd6db4ad5279037d5fc08ca9b5	user
+3	Pruthvi	Pruthvi@gmail.com	2025-08-26 19:17:05.708274	scrypt:32768:8:1$XjKV5r6mKIUlf5B4$b4542a2d712fc00691183b8746d1ce7a0f4dc2f233469e4d5295dc19f159b8ba19653bcd50f372b7383e7de4cac7052b8e258450349f02b9cdab30aae940e731	user
+4	meet	meet@gmail.com	2025-12-24 00:22:07.164808	scrypt:32768:8:1$oYqzBZW426ZdE38j$3f2569737413d4172739302d9548199d6da14095df37f7e023830354db774b5b61f38c220d0c3af85b2290d0428b3c77db04a906c7522761935dfd536a38b79e	user
 \.
 
 
@@ -60,16 +50,6 @@ COPY public.projects (id, user_id, name, type, location, start_date, end_date, s
 8	3	Smart City Infrastructure	Building	Washington, USA	2024-01-10	2024-10-31	Active	2025-11-23 23:42:48.704667
 9	3	Low-Carbon Railway Extension	Railway	Illinois, USA	2023-11-01	2024-09-30	Active	2025-11-23 23:42:48.704667
 10	3	Sustainable Port Development	Port	Georgia, USA	2024-06-01	2025-05-31	Active	2025-11-23 23:42:48.704667
-51	13	Seller Project	Wind	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:53:35.522739
-52	14	Buyer Project	Building	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:53:35.522739
-53	15	Seller Project	Wind	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:54:00.658413
-54	16	Buyer Project	Building	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:54:00.658413
-55	17	Seller Project	Wind	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:54:56.282342
-56	18	Buyer Project	Building	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:54:56.282342
-57	19	Seller Project	Wind	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:55:25.538866
-58	20	Buyer Project	Building	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:55:25.538866
-59	21	Seller Project	Wind	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:58:52.616417
-60	22	Buyer Project	Building	\N	2025-01-01	2025-12-31	In Progress	2025-12-22 15:58:52.616417
 \.
 
 
@@ -80,8 +60,6 @@ COPY public.projects (id, user_id, name, type, location, start_date, end_date, s
 --
 
 COPY public.carbon_credits (id, project_id, user_id, credits_earned, credits_used, listed_quantity, credit_value, transaction_type, status, issued_at, created_at, source) FROM stdin;
-54	59	21	100.00	5.00	5.00	10000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:58:52.616417	ISSUANCE
-55	60	22	5.00	0.00	0.00	250.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:58:53.264739	PURCHASED
 57	2	1	1.00	0.00	0.00	1000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 17:35:11.906539	PURCHASED
 37	6	2	68.20	1.50	10.50	68200.00	ISSUANCE	available	2024-01-15	2025-11-23 23:44:15.536566	ISSUANCE
 58	3	1	0.50	0.00	0.00	500.00	ISSUANCE	AVAILABLE	2025-12-23	2025-12-23 17:00:35.879771	PURCHASED
@@ -95,10 +73,6 @@ COPY public.carbon_credits (id, project_id, user_id, credits_earned, credits_use
 40	9	3	55.80	0.00	0.00	55800.00	ISSUANCE	available	2024-01-05	2025-11-23 23:44:15.536566	ISSUANCE
 41	10	3	62.40	0.00	0.00	62400.00	ISSUANCE	available	2024-07-01	2025-11-23 23:44:15.536566	ISSUANCE
 46	6	2	10.00	0.00	0.00	72500.00	ISSUANCE	available	2024-11-24	2025-11-24 22:55:36.452162	ISSUANCE
-50	51	13	100.00	0.00	10.00	10000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:53:35.522739	ISSUANCE
-51	53	15	100.00	0.00	10.00	10000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:54:00.658413	ISSUANCE
-52	55	17	100.00	0.00	10.00	10000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:54:56.282342	ISSUANCE
-53	57	19	100.00	0.00	10.00	10000.00	ISSUANCE	AVAILABLE	2025-12-22	2025-12-22 15:55:25.538866	ISSUANCE
 \.
 
 
@@ -109,11 +83,6 @@ COPY public.carbon_credits (id, project_id, user_id, credits_earned, credits_use
 --
 
 COPY public.marketplace_listings (id, credit_id, seller_id, quantity_available, price_per_credit, status, listed_at) FROM stdin;
-14	50	13	10.00	50.00	active	2025-12-22 15:53:35.653631
-15	51	15	10.00	50.00	active	2025-12-22 15:54:00.763567
-16	52	17	10.00	50.00	active	2025-12-22 15:54:56.405344
-17	53	19	10.00	50.00	active	2025-12-22 15:55:25.692699
-18	54	21	5.00	50.00	active	2025-12-22 15:58:52.863995
 13	37	2	10.50	1000.00	active	2025-12-22 14:48:56.811518
 \.
 
@@ -125,7 +94,6 @@ COPY public.marketplace_listings (id, credit_id, seller_id, quantity_available, 
 --
 
 COPY public.carbon_credit_transactions (id, from_user_id, to_user_id, quantity, price_per_credit, total_price, from_project_id, to_project_id, listing_id, transaction_type, status, payment_reference, created_at, updated_at) FROM stdin;
-1	21	22	5.00	50.00	250.00	59	60	18	PURCHASE	COMPLETED	PAY_AA99AC75D446	2025-12-22 15:58:53.264739	2025-12-22 15:58:53.264739
 2	2	1	1.00	1000.00	1000.00	6	2	13	PURCHASE	COMPLETED	LEGACY_PAYMENT	2025-12-22 17:35:11.906539	2025-12-22 17:35:11.906539
 3	2	1	0.50	1000.00	500.00	6	3	13	PURCHASE	COMPLETED	LEGACY_PAYMENT	2025-12-23 17:00:35.879771	2025-12-23 17:00:35.879771
 \.
